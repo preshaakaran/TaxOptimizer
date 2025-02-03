@@ -1,0 +1,102 @@
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import List, Optional
+import sqlite3
+from datetime import datetime
+
+app = FastAPI()
+
+# Database connection
+def get_db():
+    conn = sqlite3.connect("AccountDB.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# Models
+class JournalEntry(BaseModel):
+    transaction_id: int
+    date: str
+    time: str
+    description: str
+    debit_account: int
+    debit_amount: float
+    credit_account: int
+    credit_amount: float
+
+class ChartAccount(BaseModel):
+    account_id: int
+    name: str
+    type: str
+    balance: float
+
+# API endpoints
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the Accounting API"}
+
+@app.get("/journal")
+async def get_journal(start_date: Optional[str] = None, end_date: Optional[str] = None):
+    db = get_db()
+    cursor = db.cursor()
+    
+    query = "SELECT * FROM Journal"
+    params = []
+    
+    if start_date and end_date:
+        query += " WHERE date BETWEEN ? AND ?"
+        params = [start_date, end_date]
+    
+    cursor.execute(query, params)
+    journal_entries = cursor.fetchall()
+    
+    return [dict(entry) for entry in journal_entries]
+
+@app.post("/journal")
+async def add_journal_entry(entry: JournalEntry):
+    db = get_db()
+    cursor = db.cursor()
+    
+    cursor.execute("""
+    INSERT INTO Journal (transaction_id, date, time, description, debit_account, debit_amount, credit_account, credit_amount)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (entry.transaction_id, entry.date, entry.time, entry.description, entry.debit_account, entry.debit_amount, entry.credit_account, entry.credit_amount))
+    
+    db.commit()
+    return {"message": "Journal entry added successfully"}
+
+@app.get("/chart_of_accounts")
+async def get_chart_of_accounts():
+    db = get_db()
+    cursor = db.cursor()
+    
+    cursor.execute("SELECT * FROM ChartOfAccounts")
+    accounts = cursor.fetchall()
+    
+    return [dict(account) for account in accounts]
+
+@app.post("/chart_of_accounts")
+async def add_account(account: ChartAccount):
+    db = get_db()
+    cursor = db.cursor()
+    
+    cursor.execute("""
+    INSERT INTO ChartOfAccounts (account_id, name, type, balance)
+    VALUES (?, ?, ?, ?)
+    """, (account.account_id, account.name, account.type, account.balance))
+    
+    db.commit()
+    return {"message": "Account added successfully"}
+
+@app.get("/ledger/{account_id}")
+async def get_ledger(account_id: int):
+    db = get_db()
+    cursor = db.cursor()
+    
+    cursor.execute("SELECT * FROM Ledger WHERE account_id = ?", (account_id,))
+    ledger_entries = cursor.fetchall()
+    
+    return [dict(entry) for entry in ledger_entries]
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

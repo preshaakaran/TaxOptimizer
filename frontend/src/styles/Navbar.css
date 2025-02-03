@@ -1,0 +1,84 @@
+.navbar {
+background-color: white;
+border-bottom: 1px solid #e2e8f0;
+}
+
+.navbar-container {
+max-width: 1400px;
+margin: 0 auto;
+padding: 0 2rem;
+height: 64px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.nav-left {
+display: flex;
+align-items: center;
+gap: 2rem;
+}
+
+.nav-logo {
+font-size: 1.25rem;
+font-weight: bold;
+color: #7c3aed;
+text-decoration: none;
+}
+
+.nav-links {
+display: none;
+}
+
+.nav-right {
+display: flex;
+align-items: center;
+gap: 1rem;
+}
+
+.notification-bell {
+position: relative;
+}
+
+.notification-badge {
+position: absolute;
+top: -8px;
+right: -8px;
+background-color: #ef4444;
+color: white;
+font-size: 0.75rem;
+width: 16px;
+height: 16px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.profile-icon {
+width: 32px;
+height: 32px;
+background-color: #7c3aed;
+color: white;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+@media (min-width: 768px) {
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.nav-links a.active {
+    color: #7c3aed;
+}
+}
